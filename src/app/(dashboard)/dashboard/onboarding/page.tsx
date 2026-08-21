@@ -136,9 +136,9 @@ export default function OnboardingPage() {
           slug: form.slug,
           description: form.description || `${form.name} - Radio en ligne`,
           country: form.country,
-          city: form.city,
-          status: "active",
-          owner_id: user.id,
+          city: form.city || form.country,
+          is_active: true,
+          is_public: true,
         })
         .select()
         .single();
@@ -146,29 +146,35 @@ export default function OnboardingPage() {
       if (radioError) throw radioError;
 
       // Add user as owner
-      await supabase.from("radio_members").insert({
+      const { error: memberError } = await supabase.from("radio_members").insert({
         radio_id: radio.id,
         user_id: user.id,
-        role: "owner",
+        role: "RADIO_OWNER",
       });
+
+      if (memberError) throw memberError;
 
       // Add stream if provided
       if (form.streamUrl) {
-        await supabase.from("streams").insert({
+        const { error: streamError } = await supabase.from("streams").insert({
           radio_id: radio.id,
-          stream_url: form.streamUrl,
-          stream_type: form.streamType,
+          name: "Flux principal",
+          url: form.streamUrl,
+          type: form.streamType,
           bitrate: 128,
           codec: "mp3",
-          status: "offline",
-          is_backup: false,
+          status: "OFFLINE",
+          is_primary: true,
+          is_active: true,
         });
+        if (streamError) console.error("Stream error:", streamError);
       }
 
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating radio:", err);
-      alert("Erreur lors de la création. Veuillez réessayer.");
+      const errorMessage = err?.message || err?.error?.message || "Erreur inconnue";
+      alert(`Erreur lors de la création: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
