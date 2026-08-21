@@ -15,8 +15,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RadioOS - Le système d'exploitation numérique des radios",
-  description: "Streaming, audience, podcasts, interaction et monétisation réunis dans une seule plateforme.",
+  title: {
+    default: "RadioOS - Le système d'exploitation numérique des radios",
+    template: "%s | RadioOS",
+  },
+  description: "Streaming, audience, podcasts, interaction et monétisation réunis dans une seule plateforme pour les radios africaines.",
+  keywords: ["radio", "streaming", "podcast", "audio", "afrique", "radio en ligne", "radio en direct"],
+  authors: [{ name: "RadioOS" }],
+  creator: "RadioOS",
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "RadioOS",
+    title: "RadioOS - Le système d'exploitation numérique des radios",
+    description: "Streaming, audience, podcasts, interaction et monétisation réunis dans une seule plateforme.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RadioOS",
+    description: "Le système d'exploitation numérique des radios",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#2563EB",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function RootLayout({

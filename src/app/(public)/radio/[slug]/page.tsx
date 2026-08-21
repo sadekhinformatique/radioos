@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { AudioPlayer } from "./audio-player";
 import { LiveChat } from "./live-chat";
 import { LiveListeners } from "./live-listeners";
 import { LivePoll } from "./live-poll";
@@ -13,16 +14,10 @@ import {
   Headphones,
   Clock,
   Globe,
-  Music,
   Podcast,
-  MessageCircle,
-  Heart,
-  BarChart3,
-  Play,
-  Pause,
   Calendar,
   MapPin,
-  Share2,
+  Play,
   ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +77,6 @@ export default function PublicRadioPage() {
   const [shows, setShows] = useState<ShowData[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     async function fetch() {
@@ -190,44 +184,13 @@ export default function PublicRadioPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Player */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center">
-                  <Radio className="w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">{radio.name}</h2>
-                  {stream && (
-                    <div className="flex items-center gap-2 text-blue-100 text-sm">
-                      <span>{stream.bitrate} kbps</span>
-                      <span>•</span>
-                      <span>{stream.codec.toUpperCase()}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {stream ? (
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-16 h-16 rounded-full bg-white text-blue-600 flex items-center justify-center hover:bg-white/90 transition-colors"
-                  >
-                    {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
-                  </button>
-                  <div className="flex-1">
-                    <div className="text-sm text-blue-100 mb-1">
-                      {stream.status === "online" ? "🟢 En direct" : "🔴 Hors ligne"}
-                    </div>
-                    <div className="text-xs text-blue-200">{stream.stream_url}</div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-4 text-blue-200">
-                  <p>Aucun flux audio configuré</p>
-                </div>
-              )}
-            </div>
+            <AudioPlayer
+              streamUrl={stream?.stream_url || ""}
+              streamType={stream?.stream_type || "icecast"}
+              radioName={radio.name}
+              isLive={stream?.status === "online"}
+              bitrate={stream?.bitrate || 128}
+            />
 
             {/* Description */}
             {radio.description && (
