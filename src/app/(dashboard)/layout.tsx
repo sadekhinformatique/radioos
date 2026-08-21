@@ -42,8 +42,11 @@ export default async function DashboardLayout({
   return (
     <DashboardShell
       user={{
-        email: user.email,
-        profile: user.profile,
+        id: user.id || "",
+        email: user.email || "",
+        full_name: user.profile?.full_name || user.user_metadata?.full_name,
+        avatar_url: user.profile?.avatar_url || user.user_metadata?.avatar_url,
+        role: user.profile?.role || user.role,
       }}
       radio={activeRadio}
     >

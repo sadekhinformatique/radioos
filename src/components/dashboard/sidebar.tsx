@@ -24,6 +24,7 @@ import {
   List,
   Code,
   Mail,
+  Key,
 } from "lucide-react";
 
 const navigation = [
@@ -40,6 +41,7 @@ const navigation = [
   { name: "Facturation", href: "/dashboard/billing", icon: CreditCard },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
   { name: "API Docs", href: "/dashboard/api-docs", icon: Code },
+  { name: "Clés API", href: "/dashboard/api-keys", icon: Key },
   { name: "Emails", href: "/dashboard/email-preview", icon: Mail },
 ];
 

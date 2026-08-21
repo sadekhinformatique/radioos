@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMyRadio, useStreams, updateRecord, createRecord, deleteRecord } from "@/hooks/use-radio-data";
+import { useToast } from "@/components/ui/toast";
 import { useRealtimeListeners } from "@/hooks/use-realtime-listeners";
 import {
   Radio,
@@ -23,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 export default function StreamingPage() {
   const { radio } = useMyRadio();
   const { data: streams, refetch } = useStreams(radio?.id || null);
+  const { addToast } = useToast();
   const { count: liveListeners, isConnected } = useRealtimeListeners(radio?.id || null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newStream, setNewStream] = useState({ stream_url: "", stream_type: "icecast", bitrate: 128, codec: "mp3" });
@@ -42,8 +44,10 @@ export default function StreamingPage() {
       setNewStream({ stream_url: "", stream_type: "icecast", bitrate: 128, codec: "mp3" });
       setShowAddForm(false);
       refetch();
+      addToast({ type: "success", title: "Flux ajouté", message: "Le flux a été configuré avec succès." });
     } catch (err) {
       console.error("Error adding stream:", err);
+      addToast({ type: "error", title: "Erreur", message: "Impossible d'ajouter le flux." });
     }
   };
 
@@ -52,6 +56,7 @@ export default function StreamingPage() {
     try {
       await deleteRecord("streams", id);
       refetch();
+      addToast({ type: "success", title: "Flux supprimé" });
     } catch (err) {
       console.error("Error deleting stream:", err);
     }
