@@ -36,7 +36,11 @@ export const metadata: Metadata = {
     description: "Le système d'exploitation numérique des radios",
   },
   manifest: "/manifest.json",
-  themeColor: "#2563EB",
+  themeColor: "#f97316",
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+  },
   robots: {
     index: true,
     follow: true,

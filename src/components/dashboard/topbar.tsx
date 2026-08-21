@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { GlobalSearch } from "./global-search";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 interface TopbarProps {
   onMenuToggle?: () => void;
@@ -87,6 +88,9 @@ export function Topbar({
 
         {/* Theme Toggle */}
         <ThemeToggle />
+
+        {/* Language Switcher */}
+        <LanguageSwitcher />
 
         {/* Notifications */}
         <Link
