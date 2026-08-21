@@ -1,0 +1,2 @@
+$proc = Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev' -WorkingDirectory 'C:\Users\sss19\OneDrive\Desktop\djahfar sadekh\SASOS' -RedirectStandardOutput 'C:\Users\sss19\OneDrive\Desktop\djahfar sadekh\SASOS\.freebuff\preview-ad4dccbf-6fd5-48e9-9a53-bfabeea58429.log' -RedirectStandardError 'C:\Users\sss19\OneDrive\Desktop\djahfar sadekh\SASOS\.freebuff\preview-ad4dccbf-6fd5-48e9-9a53-bfabeea58429.log.err' -WindowStyle Hidden -PassThru
+Write-Output $proc.Id

@@ -1,0 +1,14 @@
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="36" cy="36" r="36" fill="#2563EB"/>
+  <g opacity="0.3">
+    <circle cx="36" cy="36" r="25.2" stroke="white" stroke-width="1.44" fill="none"/>
+    <circle cx="36" cy="36" r="18" stroke="white" stroke-width="1.44" fill="none"/>
+    <circle cx="36" cy="36" r="10.8" stroke="white" stroke-width="1.44" fill="none"/>
+  </g>
+  <circle cx="36" cy="36" r="5.76" fill="white"/>
+  <text x="36" y="44.64" font-family="Arial, sans-serif" font-size="28.8" font-weight="bold" fill="white" text-anchor="middle">R</text>
+  <g opacity="0.5">
+    <path d="M21.6 18 Q36 10.8 50.4 18" stroke="white" stroke-width="1.08" fill="none" stroke-linecap="round"/>
+    <path d="M18 25.2 Q36 14.4 54 25.2" stroke="white" stroke-width="1.08" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

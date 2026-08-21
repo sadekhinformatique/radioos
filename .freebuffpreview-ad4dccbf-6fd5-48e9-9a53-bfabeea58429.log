@@ -1,0 +1,17 @@
+
+> radioos@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:50644
+- Network:       http://10.141.159.200:50644
+- Environments: .env.local
+✓ Ready in 1640ms
+✓ Running next.config.ts took 235ms
+
+ GET / 200 in 1863ms (next.js: 610ms, proxy.ts: 219ms, application-code: 1033ms)
+ GET / 200 in 490ms (next.js: 19ms, proxy.ts: 17ms, application-code: 454ms)
+ GET / 200 in 641ms (next.js: 22ms, proxy.ts: 12ms, application-code: 607ms)
+ GET / 200 in 616ms (next.js: 16ms, proxy.ts: 9ms, application-code: 592ms)
+ GET / 200 in 974ms (next.js: 86ms, proxy.ts: 15ms, application-code: 872ms)
+[?25h

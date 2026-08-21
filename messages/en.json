@@ -1,0 +1,328 @@
+{
+  "common": {
+    "appName": "RadioOS",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "view": "View",
+    "download": "Download",
+    "upload": "Upload",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "live": "LIVE",
+    "offline": "Offline",
+    "online": "Online",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "streaming": "Streaming",
+    "programs": "Programs",
+    "shows": "Shows",
+    "podcasts": "Podcasts",
+    "messages": "Messages",
+    "dedications": "Dedications",
+    "polls": "Polls",
+    "analytics": "Analytics",
+    "advertising": "Advertising",
+    "users": "Users",
+    "settings": "Settings",
+    "support": "Support",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Sign Up",
+    "admin": "Admin"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to your radio dashboard",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "or": "or",
+      "google": "Continue with Google",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account",
+      "errors": {
+        "invalidCredentials": "Invalid email or password.",
+        "emailNotConfirmed": "Please confirm your email before signing in.",
+        "tooManyRequests": "Too many attempts. Please try again in a few minutes."
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Start managing your radio",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "John Doe",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirm password",
+      "submit": "Create account",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in",
+      "errors": {
+        "passwordMismatch": "Passwords do not match.",
+        "passwordTooShort": "Password must be at least 8 characters.",
+        "emailExists": "An account already exists with this email."
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email to reset your password",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "submit": "Send reset link",
+      "back": "Back to login",
+      "success": "A password reset email has been sent."
+    },
+    "resetPassword": {
+      "title": "New password",
+      "subtitle": "Enter your new password",
+      "password": "New password",
+      "confirmPassword": "Confirm password",
+      "submit": "Reset password",
+      "success": "Password reset successfully."
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "🎙️ The #1 platform for African radios",
+      "title": "The digital operating system for radios.",
+      "titleHighlight": "digital operating system for radios.",
+      "description": "Streaming, audience, podcasts, interaction and monetization all in one platform.",
+      "cta": "Create my radio",
+      "ctaSecondary": "View platform"
+    },
+    "problem": {
+      "title": "Radios deserve more than a simple player",
+      "description": "Today, radios face major challenges: managing their streaming, tracking their audience, publishing their podcasts and interacting with their listeners, while developing their revenue.",
+      "items": {
+        "dispersed": {
+          "title": "Dispersed streams",
+          "description": "Managing Icecast, Shoutcast and AzuraCast separately, without a global view."
+        },
+        "visibility": {
+          "title": "No visibility",
+          "description": "Impossible to know how many listeners are tuning in and where they come from."
+        },
+        "interaction": {
+          "title": "Limited interaction",
+          "description": "No simple way to receive messages, dedications and polls."
+        }
+      }
+    },
+    "solution": {
+      "title": "RadioOS: your digital headquarters",
+      "description": "A single platform to manage everything. Connect your existing stream and start tracking your audience in minutes."
+    },
+    "features": {
+      "title": "Everything your radio needs",
+      "description": "Powerful features designed for modern radios.",
+      "items": {
+        "streaming": {
+          "title": "Streaming",
+          "description": "Connect your Icecast, Shoutcast or HLS stream. Real-time monitoring."
+        },
+        "audience": {
+          "title": "Audience",
+          "description": "Track your listeners in real-time. Countries, devices, listening duration."
+        },
+        "podcasts": {
+          "title": "Podcasts",
+          "description": "Publish and manage your podcasts. AI transcription and automatic summaries."
+        },
+        "interaction": {
+          "title": "Interaction",
+          "description": "Messages, dedications, polls. Interact with your listeners."
+        },
+        "advertising": {
+          "title": "Advertising",
+          "description": "Manage your advertising campaigns and maximize your revenue."
+        },
+        "publicPage": {
+          "title": "Public page",
+          "description": "A professional page for your radio. Responsive and fast."
+        }
+      }
+    },
+    "pricing": {
+      "title": "Pricing for your radio",
+      "description": "Start for free, scale at your pace.",
+      "cta": "Get started",
+      "plans": {
+        "starter": {
+          "name": "Starter",
+          "price": "0",
+          "description": "For radios getting started",
+          "features": ["1 radio", "Basic streaming", "100 listeners max", "Podcasts (5/month)", "Messages", "Public page"]
+        },
+        "professional": {
+          "name": "Professional",
+          "price": "25,000",
+          "description": "For established radios",
+          "features": ["1 radio", "All stream types", "1,000 listeners", "Unlimited podcasts", "Advanced analytics", "Advertising", "Dedications & Polls", "Priority support"],
+          "popular": "Most popular"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "75,000",
+          "description": "For radio groups",
+          "features": ["Multi-radio", "Unlimited listeners", "Full API", "White-label", "Dedicated support", "Guaranteed SLA", "Premium analytics", "Custom integrations"]
+        }
+      },
+      "currency": "FCFA",
+      "period": "/month"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "Do I need to change my streaming infrastructure?",
+          "a": "No! RadioOS connects to your existing stream (Icecast, Shoutcast, AzuraCast, HLS). You keep your current infrastructure."
+        },
+        {
+          "q": "How many listeners can I have?",
+          "a": "The Starter plan supports up to 100 simultaneous listeners. The Professional plan supports 1,000 listeners. The Enterprise plan is unlimited."
+        },
+        {
+          "q": "Can I pay in FCFA?",
+          "a": "Yes! We support FCFA payments via Mobile Money (Orange Money, Wave, MTN) and credit cards."
+        },
+        {
+          "q": "Is there a contract?",
+          "a": "No, you can cancel your subscription at any time. The Starter plan is free and without commitment."
+        },
+        {
+          "q": "How does AI work for podcasts?",
+          "a": "AI analyzes your audio file and automatically generates the title, description, chapters and keywords. You can edit everything before publishing."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to digitize your radio?",
+      "description": "Join hundreds of radios using RadioOS to grow their audience and revenue.",
+      "submit": "Create my radio for free"
+    },
+    "footer": {
+      "description": "The digital operating system for radios.",
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "demo": "Demo",
+      "support": "Support",
+      "faq": "FAQ",
+      "documentation": "Documentation",
+      "contact": "Contact",
+      "legal": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "copyright": "© 2026 RadioOS. All rights reserved."
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "overview": "Overview",
+    "listeners": "Listeners",
+    "currentShow": "Current show",
+    "nextShow": "Next show",
+    "recentMessages": "Recent messages",
+    "quickActions": "Quick actions",
+    "stats": {
+      "listeners": "Current listeners",
+      "peak": "Daily peak",
+      "duration": "Average duration",
+      "countries": "Countries"
+    }
+  },
+  "streaming": {
+    "title": "Streaming",
+    "status": "Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "url": "Stream URL",
+    "type": "Stream type",
+    "codec": "Codec",
+    "bitrate": "Bitrate",
+    "latency": "Latency",
+    "uptime": "Uptime",
+    "incidents": "Incidents"
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "volume": "Volume",
+    "mute": "Mute",
+    "share": "Share",
+    "dataSaving": "Data saving mode",
+    "listeners": "listeners"
+  },
+  "share": {
+    "title": "Share",
+    "whatsapp": "Share on WhatsApp",
+    "facebook": "Share on Facebook",
+    "twitter": "Share on X",
+    "telegram": "Share on Telegram",
+    "copyLink": "Copy link",
+    "copied": "Link copied!"
+  },
+  "support": {
+    "title": "Support",
+    "newTicket": "New ticket",
+    "subject": "Subject",
+    "description": "Description",
+    "category": "Category",
+    "priority": "Priority",
+    "categories": {
+      "technical": "Technical",
+      "billing": "Billing",
+      "streaming": "Streaming",
+      "account": "Account",
+      "advertising": "Advertising",
+      "other": "Other"
+    },
+    "priorities": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "statuses": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "waiting": "Waiting",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    }
+  }
+}
