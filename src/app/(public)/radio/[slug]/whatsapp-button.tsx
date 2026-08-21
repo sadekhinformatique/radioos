@@ -4,12 +4,14 @@ import { useState } from "react";
 import { X } from "lucide-react";
 
 interface WhatsAppButtonProps {
-  phoneNumber: string;
+  phoneNumber?: string;
   radioName: string;
 }
 
 export function WhatsAppButton({ phoneNumber, radioName }: WhatsAppButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  if (!phoneNumber) return null;
 
   const cleanNumber = phoneNumber.replace(/[^0-9]/g, "");
   const defaultMessage = encodeURIComponent(
