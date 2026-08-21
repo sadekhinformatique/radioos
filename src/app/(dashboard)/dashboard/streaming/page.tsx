@@ -1,245 +1,254 @@
+"use client";
+
+import { useState } from "react";
+import { useMyRadio, useStreams, updateRecord, createRecord, deleteRecord } from "@/hooks/use-radio-data";
+import { useRealtimeListeners } from "@/hooks/use-realtime-listeners";
 import {
   Radio,
   Wifi,
   WifiOff,
+  Headphones,
   Activity,
   Clock,
-  AlertTriangle,
+  Globe,
+  Plus,
+  Trash2,
+  Settings,
+  Zap,
+  AlertCircle,
   CheckCircle,
-  XCircle,
-  RefreshCw,
 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/ui/stat-card";
 
 export default function StreamingPage() {
+  const { radio } = useMyRadio();
+  const { data: streams, refetch } = useStreams(radio?.id || null);
+  const { count: liveListeners, isConnected } = useRealtimeListeners(radio?.id || null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newStream, setNewStream] = useState({ stream_url: "", stream_type: "icecast", bitrate: 128, codec: "mp3" });
+
+  const mainStream = streams?.find((s) => !s.is_backup);
+  const backupStream = streams?.find((s) => s.is_backup);
+
+  const handleAddStream = async () => {
+    if (!radio || !newStream.stream_url) return;
+    try {
+      await createRecord("streams", {
+        radio_id: radio.id,
+        ...newStream,
+        status: "offline",
+        is_backup: false,
+      });
+      setNewStream({ stream_url: "", stream_type: "icecast", bitrate: 128, codec: "mp3" });
+      setShowAddForm(false);
+      refetch();
+    } catch (err) {
+      console.error("Error adding stream:", err);
+    }
+  };
+
+  const handleDeleteStream = async (id: string) => {
+    if (!confirm("Supprimer ce flux ?")) return;
+    try {
+      await deleteRecord("streams", id);
+      refetch();
+    } catch (err) {
+      console.error("Error deleting stream:", err);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Streaming
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Monitoring et gestion de votre flux audio
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Streaming</h1>
+          <p className="text-gray-500 mt-1">Gérez vos flux audio en temps réel</p>
         </div>
-        <Button variant="outline" size="sm">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Vérifier le flux
-        </Button>
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Ajouter un flux
+        </button>
       </div>
 
-      {/* Status Banner */}
-      <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-              <Wifi className="h-5 w-5 text-green-600 dark:text-green-400" />
+      {/* Live Status */}
+      <div className={`rounded-xl p-6 ${mainStream?.status === "online" ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${mainStream?.status === "online" ? "bg-emerald-100" : "bg-red-100"}`}>
+              {mainStream?.status === "online" ? (
+                <Radio className="w-8 h-8 text-emerald-600" />
+              ) : (
+                <WifiOff className="w-8 h-8 text-red-600" />
+              )}
             </div>
             <div>
-              <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                Flux principal connecté
-              </p>
-              <p className="text-xs text-green-600 dark:text-green-400">
-                Dernière vérification : il y a 2 minutes • Latence : 45ms
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {mainStream?.status === "online" ? "🟢 En ligne" : "🔴 Hors ligne"}
+                </h2>
+                {mainStream?.status === "online" && (
+                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                    <Zap className="w-3 h-3 mr-1" />
+                    LIVE
+                  </Badge>
+                )}
+              </div>
+              <p className="text-gray-500 mt-1">
+                {mainStream ? `${mainStream.stream_url}` : "Aucun flux configuré"}
               </p>
             </div>
-            <Badge variant="online" className="ml-auto">
-              CONNECTÉ
-            </Badge>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Stream Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Statut"
-          value="En ligne"
-          icon={<Wifi className="h-5 w-5" />}
-          description="Flux principal"
-        />
-        <StatCard
-          title="Latence"
-          value="45 ms"
-          icon={<Activity className="h-5 w-5" />}
-          description="Temps de réponse"
-        />
-        <StatCard
-          title="Uptime"
-          value="99.8%"
-          icon={<Clock className="h-5 w-5" />}
-          description="30 derniers jours"
-        />
-        <StatCard
-          title="Incidents"
-          value="2"
-          icon={<AlertTriangle className="h-5 w-5" />}
-          description="Ce mois-ci"
-        />
+          <div className="text-right">
+            <div className="text-3xl font-bold text-gray-900">{liveListeners}</div>
+            <div className="text-sm text-gray-500 flex items-center gap-1">
+              <Headphones className="w-4 h-4" />
+              auditeurs en ligne
+            </div>
+            {isConnected && (
+              <Badge className="mt-2 bg-emerald-100 text-emerald-700 border-emerald-200">
+                <Wifi className="w-3 h-3 mr-1" />
+                Connecté
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Primary Stream */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Radio className="h-5 w-5 text-blue-600" />
-              Flux principal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    URL
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 font-mono truncate">
-                    https://stream.radioos.com/live
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Type
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    Icecast
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Codec
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    MP3
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Bitrate
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    128 kbps
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600 dark:text-green-400">
-                  Disponible et fonctionnel
-                </span>
-              </div>
+      {/* Stream Config */}
+      {mainStream && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500">Type</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Backup Stream */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Radio className="h-5 w-5 text-orange-600" />
-              Flux secondaire
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    URL
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 font-mono truncate">
-                    https://backup.radioos.com/live
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Type
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    Icecast
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Codec
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    MP3
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Bitrate
-                  </p>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    64 kbps
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <XCircle className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  En attente de configuration
-                </span>
-              </div>
+            <div className="font-semibold text-gray-900">{mainStream.stream_type.toUpperCase()}</div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Activity className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500">Bitrate</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="font-semibold text-gray-900">{mainStream.bitrate} kbps</div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Globe className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500">Codec</span>
+            </div>
+            <div className="font-semibold text-gray-900">{mainStream.codec.toUpperCase()}</div>
+          </div>
+        </div>
+      )}
 
-      {/* Incident History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            Historique des incidents
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[
-              {
-                date: "15 Août 2026, 14:32",
-                duration: "12 minutes",
-                type: "Interruption du flux",
-                status: "resolved",
-              },
-              {
-                date: "8 Août 2026, 09:15",
-                duration: "3 minutes",
-                type: "Latence élevée",
-                status: "resolved",
-              },
-            ].map((incident, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between rounded-lg border border-gray-100 p-3 dark:border-gray-800"
-              >
+      {/* All Streams */}
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="font-semibold text-gray-900">Tous les flux ({streams?.length || 0})</h3>
+        </div>
+        {streams && streams.length > 0 ? (
+          <div className="divide-y divide-gray-100">
+            {streams.map((stream) => (
+              <div key={stream.id} className="px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  {stream.status === "online" ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-gray-400" />
+                  )}
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {incident.type}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {incident.date}
-                    </p>
+                    <div className="font-medium text-gray-900">{stream.stream_url}</div>
+                    <div className="text-sm text-gray-500">
+                      {stream.stream_type.toUpperCase()} • {stream.bitrate} kbps • {stream.codec.toUpperCase()}
+                      {stream.is_backup && " • Backup"}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <Badge variant="secondary">{incident.duration}</Badge>
-                </div>
+                <button
+                  onClick={() => handleDeleteStream(stream.id)}
+                  className="p-2 hover:bg-red-50 rounded-lg text-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="px-6 py-12 text-center text-gray-400">
+            <Radio className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>Aucun flux configuré</p>
+            <p className="text-sm mt-1">Ajoutez un flux Icecast/Shoutcast pour commencer</p>
+          </div>
+        )}
+      </div>
+
+      {/* Add Stream Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Ajouter un flux</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">URL du flux</label>
+                <input
+                  type="url"
+                  value={newStream.stream_url}
+                  onChange={(e) => setNewStream({ ...newStream, stream_url: e.target.value })}
+                  placeholder="http://stream.example.com:8000/stream"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <select
+                    value={newStream.stream_type}
+                    onChange={(e) => setNewStream({ ...newStream, stream_type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="icecast">Icecast</option>
+                    <option value="shoutcast">Shoutcast</option>
+                    <option value="hls">HLS</option>
+                    <option value="other">Autre</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bitrate</label>
+                  <input
+                    type="number"
+                    value={newStream.bitrate}
+                    onChange={(e) => setNewStream({ ...newStream, bitrate: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Codec</label>
+                  <select
+                    value={newStream.codec}
+                    onChange={(e) => setNewStream({ ...newStream, codec: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="mp3">MP3</option>
+                    <option value="aac">AAC</option>
+                    <option value="ogg">OGG</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowAddForm(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+                Annuler
+              </button>
+              <button onClick={handleAddStream} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

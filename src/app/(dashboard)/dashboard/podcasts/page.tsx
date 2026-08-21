@@ -1,358 +1,196 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+"use client";
+
+import { useState } from "react";
+import { useMyRadio, usePodcasts, createRecord, deleteRecord } from "@/hooks/use-radio-data";
 import {
-  Upload,
-  Plus,
-  Search,
+  Podcast,
   Play,
   Pause,
   Download,
   Share2,
+  Plus,
+  Search,
   Clock,
-  Calendar,
-  Tag,
-  Mic,
-  Brain,
-  FileText,
-  Eye,
-  Edit,
-  Trash2,
-  BarChart,
-  Filter,
   Headphones,
+  Calendar,
+  Trash2,
 } from "lucide-react";
-
-const podcasts = [
-  {
-    id: "1",
-    title: "Interview du Président de la République",
-    description:
-      "Entretien exclusif sur les projets de développement du pays pour les 5 prochaines années.",
-    show: "Les Info du Jour",
-    host: "Fatima Sy",
-    duration: "45:32",
-    status: "published" as const,
-    category: "Interview",
-    publishedAt: "2025-08-20",
-    downloads: 12450,
-    listens: 34200,
-    hasTranscript: true,
-    tags: ["politique", "interview", "exclusif"],
-  },
-  {
-    id: "2",
-    title: "Top 10 Afrobeats de la Semaine",
-    description: "Découvrez les meilleurs titres Afrobeats de cette semaine.",
-    show: "Musique Africaine",
-    host: "Ibrahim Cissé",
-    duration: "1:15:00",
-    status: "published" as const,
-    category: "Musique",
-    publishedAt: "2025-08-19",
-    downloads: 8920,
-    listens: 28700,
-    hasTranscript: false,
-    tags: ["afrobeats", "musique", "top10"],
-  },
-  {
-    id: "3",
-    title: "Débat: L'Avenir de l'Éducation au Sénégal",
-    description:
-      "Table ronde avec des experts sur les défis et opportunités de l'éducation.",
-    show: "Espace Culture",
-    host: "Aïssatou Ndiaye",
-    duration: "58:15",
-    status: "draft" as const,
-    category: "Culture",
-    publishedAt: null,
-    downloads: 0,
-    listens: 0,
-    hasTranscript: false,
-    tags: ["éducation", "débat", "sénégal"],
-  },
-  {
-    id: "4",
-    title: "Analyse Tactical: Finale de la Ligue des Champions",
-    description:
-      "Décryptage tactique de la grande finale avec nos experts sportifs.",
-    show: "Sport Total",
-    host: "Moussa Sow",
-    duration: "32:48",
-    status: "published" as const,
-    category: "Sport",
-    publishedAt: "2025-08-18",
-    downloads: 15680,
-    listens: 42100,
-    hasTranscript: true,
-    tags: ["football", "ligue des champions", "analyse"],
-  },
-  {
-    id: "5",
-    title: "Gospel Session Acoustique",
-    description:
-      "Session acoustique spéciale avec les meilleurs artistes gospel locaux.",
-    show: "Gospel & Louanges",
-    host: "Pasteur Oumar",
-    duration: "1:02:30",
-    status: "published" as const,
-    category: "Musique",
-    publishedAt: "2025-08-17",
-    downloads: 5420,
-    listens: 18900,
-    hasTranscript: false,
-    tags: ["gospel", "acoustique", "live"],
-  },
-  {
-    id: "6",
-    title: "Podcast Spécial: Indépendance du Sénégal",
-    description:
-      "Retour historique sur l'indépendance et les grands moments de l'histoire du Sénégal.",
-    show: "Espace Culture",
-    host: "Aïssatou Ndiaye",
-    duration: "1:22:15",
-    status: "archived" as const,
-    category: "Histoire",
-    publishedAt: "2025-04-04",
-    downloads: 28900,
-    listens: 67400,
-    hasTranscript: true,
-    tags: ["histoire", "sénégal", "indépendance"],
-  },
-];
-
-const categories = [
-  "Tous",
-  "Interview",
-  "Musique",
-  "Culture",
-  "Sport",
-  "Histoire",
-  "Religieux",
-  "Politique",
-];
-
-const statusConfig = {
-  published: { label: "Publié", variant: "default" as const },
-  draft: { label: "Brouillon", variant: "secondary" as const },
-  archived: { label: "Archivé", variant: "outline" as const },
-};
+import { Badge } from "@/components/ui/badge";
 
 export default function PodcastsPage() {
+  const { radio } = useMyRadio();
+  const { data: podcasts, refetch } = usePodcasts(radio?.id || null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  const filtered = podcasts?.filter((p) => {
+    if (search && !p.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+    return true;
+  }) || [];
+
+  const categories = [...new Set(podcasts?.map((p) => p.category).filter(Boolean) || [])];
+  const totalPlays = podcasts?.reduce((sum, p) => sum + (p.play_count || 0), 0) || 0;
+  const totalDownloads = podcasts?.reduce((sum, p) => sum + (p.download_count || 0), 0) || 0;
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return "--:--";
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Supprimer ce podcast ?")) return;
+    await deleteRecord("podcasts", id);
+    refetch();
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Podcasts
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Gérez et publiez vos podcasts
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Podcasts</h1>
+          <p className="text-gray-500 mt-1">Gérez vos podcasts et épisodes</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
-            Importer
-          </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Nouveau podcast
-          </Button>
-        </div>
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Ajouter
+        </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <Mic className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {podcasts.length}
-                </div>
-                <div className="text-sm text-gray-500">Total</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <Headphones className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {(podcasts.reduce((a, p) => a + p.listens, 0) / 1000).toFixed(0)}k
-                </div>
-                <div className="text-sm text-gray-500">Écoutes</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Download className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {(podcasts.reduce((a, p) => a + p.downloads, 0) / 1000).toFixed(0)}k
-                </div>
-                <div className="text-sm text-gray-500">Téléchargements</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                <Brain className="w-6 h-6 text-orange-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {podcasts.filter((p) => p.hasTranscript).length}
-                </div>
-                <div className="text-sm text-gray-500">Transcrits</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="text-2xl font-bold text-gray-900">{podcasts?.length || 0}</div>
+          <div className="text-sm text-gray-500">Podcasts</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="text-2xl font-bold text-blue-600">{totalPlays}</div>
+          <div className="text-sm text-gray-500">Écoutes</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="text-2xl font-bold text-purple-600">{totalDownloads}</div>
+          <div className="text-sm text-gray-500">Téléchargements</div>
+        </div>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Rechercher un podcast..."
-                className="pl-10"
-              />
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {categories.map((cat) => (
-                <Button
-                  key={cat}
-                  variant={cat === "Tous" ? "default" : "outline"}
-                  size="sm"
-                >
-                  {cat}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm"
+          />
+        </div>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+        >
+          <option value="all">Toutes les catégories</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
 
-      {/* Podcasts List */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {podcasts.map((podcast) => (
-              <div
-                key={podcast.id}
-                className="flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-              >
-                {/* Thumbnail placeholder */}
-                <div className="w-full md:w-24 h-24 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mic className="w-8 h-8 text-white" />
+      {/* Podcasts Grid */}
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map((podcast) => (
+            <div key={podcast.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <Podcast className="w-8 h-8 text-white" />
                 </div>
-
-                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                          {podcast.title}
-                        </h3>
-                        <Badge variant={statusConfig[podcast.status].variant}>
-                          {statusConfig[podcast.status].label}
-                        </Badge>
-                        {podcast.hasTranscript && (
-                          <Badge variant="outline" className="text-green-600">
-                            <FileText className="w-3 h-3 mr-1" />
-                            Transcrit
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                        {podcast.description}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Mic className="w-3 h-3" />
-                          {podcast.show}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {podcast.duration}
-                        </span>
-                        {podcast.publishedAt && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {podcast.publishedAt}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <BarChart className="w-3 h-3" />
-                          {podcast.listens.toLocaleString()} écoutes
-                        </span>
-                      </div>
-                    </div>
+                  <h3 className="font-semibold text-gray-900 truncate">{podcast.title}</h3>
+                  <p className="text-sm text-gray-500 truncate mt-0.5">{podcast.description || "Pas de description"}</p>
+                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {formatDuration(podcast.duration_seconds)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Headphones className="w-3 h-3" />
+                      {podcast.play_count || 0} écoutes
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(podcast.created_at).toLocaleDateString("fr-FR")}
+                    </span>
                   </div>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {podcast.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        <Tag className="w-3 h-3 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 md:flex-shrink-0">
-                  <Button variant="outline" size="sm">
-                    <Play className="w-4 h-4" />
-                  </Button>
-                  {!podcast.hasTranscript && podcast.status === "published" && (
-                    <Button variant="outline" size="sm" className="text-orange-600">
-                      <Brain className="w-4 h-4 mr-1" />
-                      Transcrire
-                    </Button>
-                  )}
-                  <Button variant="outline" size="sm">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
-            ))}
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPlayingId(playingId === podcast.id ? null : podcast.id)}
+                    className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200"
+                  >
+                    {playingId === podcast.id ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  </button>
+                  <button className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => handleDelete(podcast.id)}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400">
+          <Podcast className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="text-lg font-medium text-gray-600">Aucun podcast</p>
+          <p className="text-sm mt-1">Ajoutez votre premier podcast pour commencer</p>
+        </div>
+      )}
+
+      {/* Add Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Ajouter un podcast</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+                <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">URL audio</label>
+                <input type="url" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowAddForm(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Annuler</button>
+              <button onClick={() => setShowAddForm(false)} className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium">Ajouter</button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 }

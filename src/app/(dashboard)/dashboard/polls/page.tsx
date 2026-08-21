@@ -1,391 +1,178 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import {
-  BarChart3,
-  Plus,
-  Search,
-  Clock,
-  Users,
-  Vote,
-  CheckCircle2,
-  XCircle,
-  Play,
-  Pause,
-  Trash2,
-  Edit,
-  Eye,
-  Share2,
-  Calendar,
-  TrendingUp,
-  Trophy,
-} from "lucide-react";
-
-const polls = [
-  {
-    id: "1",
-    question: "Quelle émission préférez-vous?",
-    status: "active" as const,
-    startDate: "2025-08-18",
-    endDate: "2025-08-25",
-    totalVotes: 4523,
-    options: [
-      { id: "1", text: "Réveil Matinal", votes: 1823, percentage: 40.3 },
-      { id: "2", text: "Musique Africaine", votes: 1456, percentage: 32.2 },
-      { id: "3", text: "Sport Total", votes: 789, percentage: 17.4 },
-      { id: "4", text: "Espace Culture", votes: 455, percentage: 10.1 },
-    ],
-  },
-  {
-    id: "2",
-    question: "Quel genre musical souhaitez-vous davantage?",
-    status: "active" as const,
-    startDate: "2025-08-20",
-    endDate: "2025-08-27",
-    totalVotes: 2891,
-    options: [
-      { id: "1", text: "Afrobeats", votes: 1156, percentage: 40.0 },
-      { id: "2", text: "Mbalax", votes: 867, percentage: 30.0 },
-      { id: "3", text: "Hip-Hop Africain", votes: 578, percentage: 20.0 },
-      { id: "4", text: "Gospel", votes: 289, percentage: 10.0 },
-    ],
-  },
-  {
-    id: "3",
-    question: "À quelle heure écoutez-vous le plus la radio?",
-    status: "completed" as const,
-    startDate: "2025-08-01",
-    endDate: "2025-08-08",
-    totalVotes: 8934,
-    options: [
-      { id: "1", text: "Matin (6h-10h)", votes: 3574, percentage: 40.0 },
-      { id: "2", text: "Midi (10h-14h)", votes: 2680, percentage: 30.0 },
-      { id: "3", text: "Après-midi (14h-18h)", votes: 1787, percentage: 20.0 },
-      { id: "4", text: "Soir (18h-22h)", votes: 893, percentage: 10.0 },
-    ],
-  },
-  {
-    id: "4",
-    question: "Seriez-vous intéressé par un podcast hebdomadaire?",
-    status: "completed" as const,
-    startDate: "2025-07-15",
-    endDate: "2025-07-22",
-    totalVotes: 3456,
-    options: [
-      { id: "1", text: "Oui, très intéressé!", votes: 2073, percentage: 60.0 },
-      { id: "2", text: "Peut-être", votes: 1037, percentage: 30.0 },
-      { id: "3", text: "Non, pas intéressé", votes: 346, percentage: 10.0 },
-    ],
-  },
-  {
-    id: "5",
-    question: "Que pensez-vous de la nouvelle identité sonore?",
-    status: "draft" as const,
-    startDate: null,
-    endDate: null,
-    totalVotes: 0,
-    options: [
-      { id: "1", text: "J'adore", votes: 0, percentage: 0 },
-      { id: "2", text: "C'est bien", votes: 0, percentage: 0 },
-      { id: "3", text: "Je préfère l'ancienne", votes: 0, percentage: 0 },
-    ],
-  },
-];
-
-const statusConfig = {
-  active: {
-    label: "Actif",
-    color: "bg-green-500",
-    icon: Play,
-    variant: "default" as const,
-  },
-  completed: {
-    label: "Terminé",
-    color: "bg-gray-500",
-    icon: CheckCircle2,
-    variant: "secondary" as const,
-  },
-  draft: {
-    label: "Brouillon",
-    color: "bg-yellow-500",
-    icon: Edit,
-    variant: "outline" as const,
-  },
-};
+import { useMyRadio, usePolls, createRecord, updateRecord, deleteRecord } from "@/hooks/use-radio-data";
+import { BarChart3, Plus, Clock, CheckCircle, Trash2, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function PollsPage() {
-  const [activePoll, setActivePoll] = useState<string>("1");
+  const { radio } = useMyRadio();
+  const { data: polls, refetch } = usePolls(radio?.id || null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newPoll, setNewPoll] = useState({ question: "", options: ["", ""] });
 
-  const currentPoll = polls.find((p) => p.id === activePoll);
+  const activePolls = polls?.filter((p) => p.status === "active") || [];
+  const completedPolls = polls?.filter((p) => p.status === "completed") || [];
+
+  const handleCreate = async () => {
+    if (!radio || !newPoll.question || newPoll.options.filter(Boolean).length < 2) return;
+    await createRecord("polls", {
+      radio_id: radio.id,
+      question: newPoll.question,
+      options: newPoll.options.filter(Boolean),
+      status: "active",
+    });
+    setNewPoll({ question: "", options: ["", ""] });
+    setShowCreateForm(false);
+    refetch();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Supprimer ce sondage ?")) return;
+    await deleteRecord("polls", id);
+    refetch();
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Sondages
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Créez et gérez vos sondages interactifs
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Sondages</h1>
+          <p className="text-gray-500 mt-1">Créez et gérez vos sondages en temps réel</p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
           Nouveau sondage
-        </Button>
+        </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {polls.length}
-                </div>
-                <div className="text-sm text-gray-500">Total</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <Play className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {polls.filter((p) => p.status === "active").length}
-                </div>
-                <div className="text-sm text-gray-500">Actifs</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <Vote className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {polls.reduce((a, p) => a + p.totalVotes, 0).toLocaleString()}
-                </div>
-                <div className="text-sm text-gray-500">Votes</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-orange-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {Math.round(
-                    polls.reduce((a, p) => a + p.totalVotes, 0) /
-                      Math.max(polls.filter((p) => p.status === "active").length, 1)
-                  ).toLocaleString()}
-                </div>
-                <div className="text-sm text-gray-500">Moy. votes</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
-        {/* Poll List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Sondages</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {polls.map((poll) => {
-                const statusInfo = statusConfig[poll.status];
-                const StatusIcon = statusInfo.icon;
-
-                return (
-                  <div
-                    key={poll.id}
-                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                      activePoll === poll.id
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                    }`}
-                    onClick={() => setActivePoll(poll.id)}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 dark:text-white line-clamp-2">
-                          {poll.question}
-                        </p>
-                        <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Vote className="w-3 h-3" />
-                            {poll.totalVotes.toLocaleString()}
-                          </span>
-                          {poll.endDate && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {poll.endDate}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge variant={statusInfo.variant}>
-                        <StatusIcon className="w-3 h-3 mr-1" />
-                        {statusInfo.label}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Poll Detail */}
-        <Card>
-          {currentPoll ? (
-            <>
-              <CardHeader>
-                <div className="flex items-start justify-between">
+      {/* Active Polls */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Sondages actifs ({activePolls.length})</h2>
+        {activePolls.length > 0 ? (
+          <div className="space-y-4">
+            {activePolls.map((poll) => (
+              <div key={poll.id} className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="flex items-start justify-between mb-4">
                   <div>
-                    <CardTitle className="text-xl">
-                      {currentPoll.question}
-                    </CardTitle>
-                    <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                      <Badge variant={statusConfig[currentPoll.status].variant}>
-                        {statusConfig[currentPoll.status].label}
+                    <h3 className="font-semibold text-gray-900 text-lg">{poll.question}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                        <BarChart3 className="w-3 h-3 mr-1" />
+                        Actif
                       </Badge>
-                      <span className="flex items-center gap-1">
-                        <Vote className="w-4 h-4" />
-                        {currentPoll.totalVotes.toLocaleString()} votes
+                      <span className="text-sm text-gray-500">
+                        {new Date(poll.created_at).toLocaleDateString("fr-FR")}
                       </span>
-                      {currentPoll.startDate && currentPoll.endDate && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {currentPoll.startDate} → {currentPoll.endDate}
-                        </span>
-                      )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {currentPoll.status === "active" && (
-                      <Button variant="outline" size="sm">
-                        <Pause className="w-4 h-4 mr-1" />
-                        Pause
-                      </Button>
-                    )}
-                    <Button variant="outline" size="sm">
-                      <Share2 className="w-4 h-4 mr-1" />
-                      Partager
-                    </Button>
-                  </div>
+                  <button
+                    onClick={() => handleDelete(poll.id)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {/* Results */}
-                <div className="space-y-6">
-                  {currentPoll.options.map((option, index) => (
-                    <div key={option.id}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          {index === 0 &&
-                            currentPoll.totalVotes > 0 && (
-                              <Trophy className="w-5 h-5 text-yellow-500" />
-                            )}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {option.text}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-gray-500">
-                            {option.votes.toLocaleString()} votes
-                          </span>
-                          <span className="font-semibold text-gray-900 dark:text-white">
-                            {option.percentage.toFixed(1)}%
-                          </span>
-                        </div>
+                <div className="space-y-2">
+                  {poll.options.map((option, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="flex-1 bg-gray-100 rounded-lg h-8 overflow-hidden">
+                        <div className="bg-purple-500 h-full rounded-lg" style={{ width: "0%" }} />
                       </div>
-                      <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            index === 0
-                              ? "bg-blue-500"
-                              : index === 1
-                              ? "bg-green-500"
-                              : index === 2
-                              ? "bg-orange-500"
-                              : "bg-purple-500"
-                          }`}
-                          style={{ width: `${option.percentage}%` }}
-                        />
-                      </div>
+                      <span className="text-sm text-gray-700 w-32 truncate">{option}</span>
+                      <span className="text-xs text-gray-400 w-8 text-right">0%</span>
                     </div>
                   ))}
                 </div>
-
-                {/* Summary */}
-                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {currentPoll.totalVotes.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-500">Votes totaux</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {currentPoll.options.length}
-                      </div>
-                      <div className="text-sm text-gray-500">Options</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-green-500">
-                        {currentPoll.options[0]?.percentage.toFixed(1)}%
-                      </div>
-                      <div className="text-sm text-gray-500">1er choix</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {currentPoll.startDate
-                          ? Math.ceil(
-                              (new Date(currentPoll.endDate!).getTime() -
-                                new Date().getTime()) /
-                                (1000 * 60 * 60 * 24)
-                            )
-                          : "—"}
-                      </div>
-                      <div className="text-sm text-gray-500">Jours restants</div>
-                    </div>
-                  </div>
+                <div className="mt-3 text-sm text-gray-500 flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  0 votes
                 </div>
-              </CardContent>
-            </>
-          ) : (
-            <CardContent className="flex flex-col items-center justify-center h-96 text-gray-500">
-              <BarChart3 className="w-12 h-12 mb-4 opacity-50" />
-              <p>Sélectionnez un sondage pour voir les résultats</p>
-            </CardContent>
-          )}
-        </Card>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
+            <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p className="text-gray-600 font-medium">Aucun sondage actif</p>
+            <p className="text-sm mt-1">Créez un sondage pour engager votre audience</p>
+          </div>
+        )}
       </div>
+
+      {/* Completed Polls */}
+      {completedPolls.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Sondages terminés ({completedPolls.length})</h2>
+          <div className="space-y-3">
+            {completedPolls.map((poll) => (
+              <div key={poll.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">{poll.question}</h3>
+                  <span className="text-sm text-gray-500">{poll.options.length} options</span>
+                </div>
+                <Badge className="bg-gray-100 text-gray-600 border-gray-200">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Terminé
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal */}
+      {showCreateForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Nouveau sondage</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
+                <input
+                  type="text"
+                  value={newPoll.question}
+                  onChange={(e) => setNewPoll({ ...newPoll, question: e.target.value })}
+                  placeholder="Quelle est votre question ?"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Options</label>
+                {newPoll.options.map((opt, idx) => (
+                  <input
+                    key={idx}
+                    type="text"
+                    value={opt}
+                    onChange={(e) => {
+                      const options = [...newPoll.options];
+                      options[idx] = e.target.value;
+                      setNewPoll({ ...newPoll, options });
+                    }}
+                    placeholder={`Option ${idx + 1}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
+                  />
+                ))}
+                {newPoll.options.length < 10 && (
+                  <button
+                    onClick={() => setNewPoll({ ...newPoll, options: [...newPoll.options, ""] })}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    + Ajouter une option
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowCreateForm(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Annuler</button>
+              <button onClick={handleCreate} className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium">Créer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
