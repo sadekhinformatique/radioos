@@ -25,6 +25,7 @@ import {
   Code,
   Mail,
   Key,
+  Activity,
 } from "lucide-react";
 
 const navigation = [
@@ -43,6 +44,7 @@ const navigation = [
   { name: "API Docs", href: "/dashboard/api-docs", icon: Code },
   { name: "Clés API", href: "/dashboard/api-keys", icon: Key },
   { name: "Emails", href: "/dashboard/email-preview", icon: Mail },
+  { name: "Activité", href: "/dashboard/activity", icon: Activity },
 ];
 
 const secondaryNavigation = [
