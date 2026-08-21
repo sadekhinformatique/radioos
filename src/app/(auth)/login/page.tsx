@@ -3,9 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { signIn, signInWithGoogle } from "@/lib/supabase/actions";
 
@@ -19,12 +16,10 @@ export default function LoginPage() {
   const [showVerified, setShowVerified] = React.useState(false);
 
   React.useEffect(() => {
-    // Check for verification success message
     if (searchParams.get("verified") === "true") {
       setShowVerified(true);
       setTimeout(() => setShowVerified(false), 5000);
     }
-    // Check for error from URL
     const urlError = searchParams.get("error");
     if (urlError) {
       setError(urlError);
@@ -43,7 +38,6 @@ export default function LoginPage() {
       setError(result.error);
       setLoading(false);
     }
-    // If successful, signIn redirects to /dashboard
   };
 
   const handleGoogleSignIn = async () => {
@@ -58,21 +52,21 @@ export default function LoginPage() {
   };
 
   return (
-    <Card>
-      <CardContent className="p-6">
+    <div className="card max-w-md w-full mx-auto">
+      <div className="p-6">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-bold text-text-primary">
               Connexion
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-text-secondary">
               Connectez-vous à votre espace radio
             </p>
           </div>
 
           {showVerified && (
-            <div className="rounded-lg bg-green-50 p-4 dark:bg-green-950">
-              <p className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
+            <div className="rounded-lg bg-success-light p-4">
+              <p className="flex items-center gap-2 text-sm text-success-text">
                 <Check className="h-4 w-4" />
                 Email vérifié avec succès ! Vous pouvez vous connecter.
               </p>
@@ -80,86 +74,109 @@ export default function LoginPage() {
           )}
 
           {error && (
-            <div className="rounded-lg bg-red-50 p-4 dark:bg-red-950">
-              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            <div className="rounded-lg bg-danger-light p-4">
+              <p className="text-sm text-danger-text">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <input type="hidden" name="next" value="/dashboard" />
 
-            <Input
-              label="Email"
-              type="email"
-              name="email"
-              placeholder="votre@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              icon={<Mail className="h-4 w-4" />}
-              required
-            />
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-text-primary">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="votre@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input pl-10"
+                  required
+                />
+              </div>
+            </div>
 
-            <div className="relative">
-              <Input
-                label="Mot de passe"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                icon={<Lock className="h-4 w-4" />}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-text-primary">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input pl-10 pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-border text-secondary focus:ring-secondary"
                 />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-text-secondary">
                   Se souvenir de moi
                 </span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                className="text-sm text-secondary hover:underline"
               >
                 Mot de passe oublié ?
               </Link>
             </div>
 
-            <Button type="submit" className="w-full" loading={loading}>
-              Se connecter
-            </Button>
+            <button
+              type="submit"
+              className="btn btn-primary w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-text-inverse" />
+                  Connexion...
+                </span>
+              ) : (
+                "Se connecter"
+              )}
+            </button>
           </form>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-800" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+              <span className="bg-surface px-2 text-text-secondary">
                 ou
               </span>
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full"
+          <button
+            type="button"
+            className="btn btn-secondary w-full"
             onClick={handleGoogleSignIn}
             disabled={loading}
           >
@@ -182,19 +199,19 @@ export default function LoginPage() {
               />
             </svg>
             Continuer avec Google
-          </Button>
+          </button>
 
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-center text-sm text-text-secondary">
             Pas encore de compte ?{" "}
             <Link
               href="/register"
-              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="font-medium text-secondary hover:underline"
             >
               Créer un compte
             </Link>
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

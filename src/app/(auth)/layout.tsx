@@ -7,26 +7,26 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-background to-primary-light">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
             <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-text-inverse font-bold">
                 R
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <span className="text-2xl font-bold text-text-primary">
                 RadioOS
               </span>
             </Link>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-sm text-text-secondary">
               Le système d&apos;exploitation numérique des radios
             </p>
           </div>
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
             }
           >
